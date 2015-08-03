@@ -269,7 +269,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 137 (last added: reduction_param)
+// LayerParameter next available layer-specific ID: 139 (last added: lstm_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -290,7 +290,7 @@ message LayerParameter {
 
   // The blobs containing the numeric parameters of the layer.
   repeated BlobProto blobs = 7;
-  
+
   // Specifies on which bottoms the backpropagation should be skipped.
   // The size must be either 0 or equal to the number of bottoms.
   repeated bool propagate_down = 11;
@@ -351,6 +351,8 @@ message LayerParameter {
   optional TanHParameter tanh_param = 127;
   optional ThresholdParameter threshold_param = 128;
   optional WindowDataParameter window_data_param = 129;
+  optional EmbedParameter embed_param = 137;
+  optional LSTMParameter lstm_param = 138;
 }
 
 // Message that stores parameters used to apply transformation
@@ -431,7 +433,7 @@ message ContrastiveLossParameter {
   // Hadsell paper. New models should probably use this version.
   // legacy_version = true uses (margin - d^2). This is kept to support /
   // reproduce existing models and results
-  optional bool legacy_version = 2 [default = false]; 
+  optional bool legacy_version = 2 [default = false];
 }
 
 message ConvolutionParameter {
@@ -1106,4 +1108,33 @@ message PReLUParameter {
   optional FillerParameter filler = 1;
   // Whether or not slope paramters are shared across channels.
   optional bool channel_shared = 2 [default = false];
+}
+
+message EmbedParameter {
+  optional uint32 num_output = 1; // The number of outputs for the layer
+  // The input is given as integers to be interpreted as one-hot
+  // vector indices with dimension num_input. Hence num_input should be
+  // 1 greater than the maximum possible input value.
+  optional uint32 input_dim = 2;
+
+  optional bool bias_term = 3 [default = true]; // Whether to use a bias term
+  optional FillerParameter weight_filler = 4; // The filler for the weight
+  optional FillerParameter bias_filler = 5; // The filler for the bias
+}
+
+message LSTMParameter {
+  optional uint32 num_output = 1;
+  // The threshold of gradients (0.0 means no clipping)
+  optional float grad_clip = 2 [default = 0.0];
+  optional float dropout = 3 [default = 0.0];
+  // The initialization method for weight
+  optional FillerParameter weight_filler = 4;
+  // The initialization method for bias
+  optional FillerParameter bias_filler = 5;
+  // Indicate the output type of current LSTM layer
+  enum OutputType {
+    ALL = 0;
+    LAST = 1;
+  }
+  optional OutputType output_type = 6 [default = ALL];
 }
